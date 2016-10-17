@@ -1,3 +1,4 @@
 # Koh Rong - Cambodia
 
-{{#image}}images/koh-rong.jpg{{/image}}
+![alt text](images/koh-rong.jpg)
+> \- North coast at daytime

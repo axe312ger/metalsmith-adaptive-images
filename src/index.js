@@ -13,11 +13,10 @@ function replacePlaceholders (text, placeholders) {
 export default function ResponsiveImages (options) {
   const defaultOptions = {
     imagesKey: 'images',
-    imagesDirectory: 'images',
     imageWidths: [1440, 960, 480],
     imageSizes: ['(min-width: 960px) 960px', '100vw'],
     defaultSize: 960,
-    namingPattern: '{dir}{name}-{size}{ext}', // foo/bar-200.jpg
+    namingPattern: '{dir}{name}-{size}{ext}',
     srcsetPattern: '{url} {size}w'
   }
 
