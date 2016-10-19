@@ -1,4 +1,6 @@
 const { parse } = require('path')
+const cheerio = require('cheerio')
+const minimatch = require('minimatch')
 
 function replacePlaceholders (text, placeholders) {
   return text.replace(/\{([^\}]+)\}/g, (match, pattern) => {
@@ -13,11 +15,14 @@ function replacePlaceholders (text, placeholders) {
 export default function ResponsiveImages (options) {
   const defaultOptions = {
     imagesKey: 'images',
+    mapKey: 'imagesMap',
     imageWidths: [1440, 960, 480],
     imageSizes: ['(min-width: 960px) 960px', '100vw'],
     defaultSize: 960,
     namingPattern: '{dir}{name}-{size}{ext}',
-    srcsetPattern: '{url} {size}w'
+    srcsetPattern: '{url} {size}w',
+    htmlFileGlob: '**/*.html',
+    htmlImageSelector: 'img'
   }
 
   function parseSrc (src) {
@@ -62,65 +67,77 @@ export default function ResponsiveImages (options) {
   }
 
   function addImageToMap (imageMap, path) {
-    const { base } = parseSrc(path)
     const image = generateImageObject(path)
     return {
       ...imageMap,
-      [base]: image
+      [path]: image
     }
   }
 
-  // Transform given array of images into a map of image objects
-  function plugin (files, metalsmith, done) {
+  // Plugin to transform array of images into a map of image objects
+  function processImages (files, metalsmith, done) {
     setImmediate(done)
 
     Object.keys(files).map((filename) => {
       const file = files[filename]
       if (file.hasOwnProperty(options.imagesKey)) {
-        file[options.imagesKey] = file[options.imagesKey]
+        file[options.mapKey] = file[options.imagesKey]
           .reduce(addImageToMap, {})
       }
     })
   }
 
+  // Plugin to replace images
+  function replaceImages (files, metalsmith, done) {
+    setImmediate(done)
+
+    Object.keys(files).map((filename) => {
+      const file = files[filename]
+      if (file.hasOwnProperty(options.imagesKey) &&
+          minimatch(filename, options.htmlFileGlob)) {
+        replaceMatchingImages(file)
+      }
+    })
+  }
+
+  function replaceMatchingImages (file) {
+    const images = file[options.imagesKey]
+    const $ = cheerio.load(file.contents, {
+      xmlMode: true,
+      lowerCaseTags: true,
+      lowerCaseAttributeNames: true
+    })
+
+    $(options.htmlImageSelector).map((index, img) => {
+      const { src, ...attrs } = img.attribs
+
+      if (images.indexOf(src) !== -1) {
+        const replacement = renderImage(src, attrs)
+        $(img).html(replacement)
+      }
+    })
+    file.contents = $.html()
+  }
+
   // Renderer for a responsive image. Additional attributes can be passed.
-  function getImageRenderer (extraAttrs) {
-    extraAttrs = extraAttrs || {}
-
-    return (text) => {
-      const [src, title] = text.split('|')
-      const image = generateImageObject(src)
-      let attrs = {
-        src: image.src,
-        srcset: image.srcset,
-        sizes: image.sizes
-      }
-      if (title) {
-        attrs = {
-          ...attrs,
-          title,
-          alt: title
-        }
-      }
-      attrs = {
-        ...attrs,
-        ...extraAttrs
-      }
-
-      attrs = Object.keys(attrs)
-        .reduce((attrList, attribute) => {
-          return [
-            ...attrList,
-            `${attribute}="${attrs[attribute]}"`
-          ]
-        }, [])
-
-      return [
-        '<img',
-        ...attrs,
-        '/>'
-      ].join(' ')
+  function renderImage (src, attrs) {
+    const image = generateImageObject(src)
+    attrs = {
+      src: image.src,
+      srcset: image.srcset,
+      sizes: image.sizes,
+      ...attrs
     }
+
+    attrs = Object.keys(attrs)
+      .reduce((attrList, attribute) => {
+        return [
+          ...attrList,
+          `${attribute}="${attrs[attribute]}"`
+        ]
+      }, [])
+
+    return `<img ${attrs.join(' ')}/>`
   }
 
   options = {
@@ -129,7 +146,8 @@ export default function ResponsiveImages (options) {
   }
 
   return {
-    plugin,
-    getImageRenderer
+    processImages,
+    replaceImages,
+    renderImage
   }
 }

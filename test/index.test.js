@@ -1,6 +1,7 @@
 import { join } from 'path'
 import test from 'ava'
 import Metalsmith from 'metalsmith'
+import markdown from 'metalsmith-markdown'
 import images from 'metalsmith-project-images'
 
 import AdaptiveImages from '../src/index'
@@ -8,11 +9,12 @@ import AdaptiveImages from '../src/index'
 const FIXTURES_DIR = join(__dirname, 'fixtures')
 
 const NAME = 'koh-rong.jpg'
+const PATH = `images/${NAME}`
 const SRC = 'images/koh-rong-960.jpg'
 const SRCSET = 'images/koh-rong-1440.jpg 1440w, images/koh-rong-960.jpg 960w, images/koh-rong-480.jpg 480w'
 const SIZES = '(min-width: 960px) 960px, 100vw'
-const ALT = 'this is the title'
-const TITLE = 'this is the title'
+const ALT = 'Koh Rong - North Coast'
+const RENDERED_IMAGE = `<img src="${SRC}" srcset="${SRCSET}" sizes="${SIZES}" alt="${ALT}"/>`
 
 test.beforeEach(async (t) => {
   const metalsmith = Metalsmith(FIXTURES_DIR)
@@ -31,7 +33,7 @@ test.cb('test basic metadata transformation', (t) => {
 
   metalsmith
     .use(images({}))
-    .use(adaptiveImages.plugin)
+    .use(adaptiveImages.processImages)
     .build((err, files) => {
       if (err) {
         t.fail()
@@ -43,10 +45,12 @@ test.cb('test basic metadata transformation', (t) => {
       const document = files['example.md']
       t.true(document.hasOwnProperty('images'))
 
-      t.is(typeof document.images, 'object')
-      t.is(typeof document.images[NAME], 'object')
+      t.true(Array.isArray(document.images))
+      t.is(typeof document.imagesMap, 'object')
+      t.is(Object.keys(document.imagesMap).length, document.images.length)
+      t.true(document.imagesMap.hasOwnProperty(PATH))
 
-      const image = document.images[NAME]
+      const image = document.imagesMap[PATH]
       t.deepEqual(image, {
         src: SRC,
         srcset: SRCSET,
@@ -68,7 +72,7 @@ test.cb('test file renaming with placeholders', (t) => {
 
   metalsmith
     .use(images({}))
-    .use(adaptiveImages.plugin)
+    .use(adaptiveImages.processImages)
     .build((err, files) => {
       if (err) {
         t.fail()
@@ -78,12 +82,10 @@ test.cb('test file renaming with placeholders', (t) => {
       t.true(files.hasOwnProperty('example.md'))
 
       const document = files['example.md']
-      t.true(document.hasOwnProperty('images'))
+      t.true(document.hasOwnProperty('imagesMap'))
+      t.true(document.imagesMap.hasOwnProperty(PATH))
 
-      t.is(typeof document.images, 'object')
-      t.is(typeof document.images[NAME], 'object')
-
-      const image = document.images[NAME]
+      const image = document.imagesMap[PATH]
       t.deepEqual(image, {
         src: 'images/koh-rong-960-{unknown-placeholder}.jpg',
         srcset: 'images/koh-rong-1440-{unknown-placeholder}.jpg 1440w, images/koh-rong-960-{unknown-placeholder}.jpg 960w, images/koh-rong-480-{unknown-placeholder}.jpg 480w',
@@ -96,11 +98,36 @@ test.cb('test file renaming with placeholders', (t) => {
     })
 })
 
+test.cb('test img tag replacement', (t) => {
+  const { metalsmith } = t.context
+
+  const adaptiveImages = AdaptiveImages()
+
+  metalsmith
+    .use(images({}))
+    .use(adaptiveImages.processImages)
+    .use(markdown())
+    .use(adaptiveImages.replaceImages)
+    .build((err, files) => {
+      if (err) {
+        t.fail()
+        t.end()
+        throw err
+      }
+      t.true(files.hasOwnProperty('example.html'))
+      const document = files['example.html']
+      t.true(document.contents.indexOf(RENDERED_IMAGE) !== -1)
+      t.pass()
+      t.end()
+    })
+})
+
 test('test image renderer', (t) => {
   const adaptiveImages = AdaptiveImages()
-  const imageRenderer = adaptiveImages.getImageRenderer()
 
-  const image = imageRenderer(`images/${NAME}|${TITLE}`)
+  const image = adaptiveImages.renderImage(PATH, {
+    alt: ALT
+  })
 
-  t.is(image, `<img src="${SRC}" srcset="${SRCSET}" sizes="${SIZES}" title="${TITLE}" alt="${ALT}" />`)
+  t.is(image, RENDERED_IMAGE)
 })

@@ -21,7 +21,10 @@ with different dimensions. Also you need to tell the browser which image to pick
 
 This plugin will create a map of images, containing metadata to properly output images with srcset and styles attributes.
 
-It is up to you to generate a gallery in your layout engine or use it your javascript to provide sharp images.
+It is up to you what to do with these informations. You can generate a gallery in your layout engine or use it your javascript to provide sharp images.
+
+For simplicity, this module also provides a replace plugin, which replaces all
+matching images with their adaptive clones within html files.
 
 ## Install
 
@@ -46,10 +49,10 @@ If you are looking for a very fast but effective JPEG compressor, I can really r
 Just use it as regular Metalsmith plugin. If your environment does not support the import syntax, see further below.
 
 The plugin expects an array of images within the metadata of a file.
-As soon as a matching metadata key is found, the plugin will convert the
-array into a map of images with proper objects with the parsed and generated metadata.
+As soon as a matching metadata key is found, the plugin will create a new map of images with proper objects with the parsed and generated metadata.
 
-Also, it provides a function to render an adaptive image tag based on a provided image url.
+It also provides a function to render an adaptive image tag based on a provided
+image url and a plugin to replace all matching images in html code.
 
 ```js
 import Metalsmith from 'metalsmith'
@@ -67,7 +70,9 @@ Metalsmith('/path/to/project')
   .use(images({}))
   // Use the plugin to attach metadata.
   // The default options match the ones of metalsmith-project-images.
-  .use(adaptiveImages.plugin)
+  .use(adaptiveImages.processImages)
+  .use(markdown()) // Generate html files out of your markdown
+  .use(adaptiveImages.replaceImages)
   .build()
 ```
 
@@ -86,7 +91,8 @@ Will be transformed into this:
 files: {
   'example.md': {
     ...,
-    images: {
+    images: [ 'images/example.jpg', ... ]
+    imagesMap: {
       'example.jpg': {
         src: 'images/example-960.jpg',
         srcset: 'images/example-1440.jpg 1440w, images/example-960.jpg 960w, images/example-480.jpg 480w',
@@ -115,15 +121,20 @@ For further examples can be found in the test directory.
 
 ## Options
 
+If you got confused and need help to pick the correct options, this article about [srcset and sizes](https://bitsofco.de/the-srcset-and-sizes-attributes/) may help you.
+
 Default options:
 ```js
 {
   imagesKey: 'images',
+  mapKey: 'imagesMap',
   imageWidths: [1440, 960, 480],
   imageSizes: ['(min-width: 960px) 960px', '100vw'],
   defaultSize: 960,
   namingPattern: '{dir}{name}-{size}{ext}', // foo/bar-200.jpg,...
   srcsetPattern: '{url} {size}w' // foo/bar-200.jpg 200w,...
+  htmlFileGlob: '**/*.html',
+  htmlImageSelector: 'img'
 }
 ```
 
@@ -131,15 +142,29 @@ Default options:
 
 The file metadata key where to look for images. [metalsmith-project-images](https://github.com/hoetmaaiers/metalsmith-project-images) uses `images` here, so does this plugin.
 
+### imagesMap
+
+The file metadata key where to store the map of image objects.
+
 ### imageWidths
 
-Defines your breakpoints for which you actually want to server images for. Make
-sure to define from biggest to lowest to prevent issues with old Internet Explorer
-versions. Also do not forget, that this plugin does not resizes the images itself.
+Base value for the srcset attribute. This array represents the different image sizes, you want to provide. Together with the `srcsetPattern` option the srcset attribute will be generated.
+
+Make sure to define from biggest to lowest size to prevent issues with some browsers.
 
 ```js
 {
-  defaultSize: [2880, 1440, 960, 480, 320]
+  imageWidths: [2880, 1440, 960, 480, 320]
+}
+```
+
+### imageSizes
+
+Values for the sizes attribute. This tells the browser, which size the image will have on the site. The values will be basically just combined to one string.
+
+```js
+{
+  imageSizes: ['(min-width: 960px) 1440px', '100vw'],
 }
 ```
 
@@ -186,24 +211,64 @@ Supported placeholders:
 }
 ```
 
-## Methods
+### htmlFileGlob
 
-### `getImageRenderer(attrs = {})`
+Glob to match html files whose images are going to be replaced by the replaceImages
+plugin. All [minimatch](https://github.com/isaacs/minimatch) features are supported.
 
-Returns a function that renders a given image based on your configuration.
-`attrs` is an object which contains extra attributes which will be
-attached to the image tag.
-
-Separated by pipe (`|`) you can provide a title for the image.
 ```js
-const adaptiveImages = AdaptiveImages()
-const imageRenderer = adaptiveImages.getImageRenderer()
-
-console.log(imageRenderer('images/example.jpg|this is the title'))
+{
+  htmlFileGlob: 'galleries/*.html'
+}
 ```
 
+### htmlImageSelector
+
+Selector to select images within the html files. Almost any jQuery selector
+pattern is support. See [cheerio selectors](https://github.com/cheeriojs/cheerio#selectors)
+documentation for more details.
+
+```js
+{
+  htmlImageSelector: 'aside.gallery img'
+}
+```
+
+## Methods
+
+
+## `processImages(files, metalsmith, done)`
+
+Plugin to process the images. You pass configuration while initializing the
+module. See above.
+
+## `replaceImages(files, metalsmith, done)`
+
+Plugin to replace the images. You pass configuration while initializing the
+module. See above.
+
+### `renderImage(src, attrs = {})`
+
+Renders a adaptive image with srcset and sizes attribute based on your configuration.
+* `src` is the path to the image.
+* `attrs` is an object containing extra attributes for the image tag.
+
+```js
+const adaptiveImages = AdaptiveImages()
+adaptiveImages.reanderImage('images/example.jpg', {
+  alt: 'alternative text',
+  title: 'title text'
+})
+```
+
+Output since we did not pass any options:
+
 ```html
-<img src="images/example-960.jpg" srcset="images/example-1440.jpg 1440w, images/example-960.jpg 960w, images/example-480.jpg 480w" sizes="(min-width: 960px) 960px, 100vw" title="this is the title" alt="this is the title" />
+<img
+  src="images/example-960.jpg"
+  srcset="images/example-1440.jpg 1440w, images/example-960.jpg 960w, images/example-480.jpg 480w"
+  sizes="(min-width: 960px) 960px, 100vw"
+  alt="alternative text" title="title text"/>
 ```
 
 ## Development
