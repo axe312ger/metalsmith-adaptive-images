@@ -16,7 +16,7 @@
 Providing images on websites nowadays can be tricky. You need to consider many different device sizes with good to to very bad connection speed.
 
 So you will end up serving multiple versions of your images
-with different dimensions. Also you need to tell the browser which image to pick for a breakpoint. The article [Don’t ruin your <img> - by Anthony Ng](https://medium.freecodecamp.com/you-need-to-stop-making-these-6-mistakes-with-your-img-s-e242c02d14be#.og235f7wq
+with different dimensions. Also you need to tell the browser which image to pick for a breakpoint. The article [Don’t ruin your &lt;img&gt; - by Anthony Ng](https://medium.freecodecamp.com/you-need-to-stop-making-these-6-mistakes-with-your-img-s-e242c02d14be#.og235f7wq
 ) explains very well, what you need to keep in mind while serving images in today's web.
 
 This plugin will create a map of images, containing metadata to properly output images with srcset and styles attributes.
