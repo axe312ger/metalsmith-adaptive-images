@@ -113,10 +113,10 @@ export default function ResponsiveImages (options) {
 
       if (images.indexOf(src) !== -1) {
         const replacement = renderImage(src, attrs)
-        $(img).html(replacement)
+        $(img).replaceWith(replacement)
       }
     })
-    file.contents = $.html()
+    file.contents = new Buffer($.html())
   }
 
   // Renderer for a responsive image. Additional attributes can be passed.
