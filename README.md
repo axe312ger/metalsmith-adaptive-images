@@ -237,12 +237,12 @@ documentation for more details.
 ## Methods
 
 
-## `processImages(files, metalsmith, done)`
+### `processImages(files, metalsmith, done)`
 
 Plugin to process the images. You pass configuration while initializing the
 module. See above.
 
-## `replaceImages(files, metalsmith, done)`
+### `replaceImages(files, metalsmith, done)`
 
 Plugin to replace the images. You pass configuration while initializing the
 module. See above.
