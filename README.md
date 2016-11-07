@@ -239,13 +239,18 @@ documentation for more details.
 
 ### `processImages(files, metalsmith, done)`
 
-Plugin to process the images. You pass configuration while initializing the
-module. See above.
+Metalsmith plugin to process the images found in the metadata of your files. Transforms an array of images to a proper map (object) with all information needed for adaptive display.
+
+Thanks to this function, you can easily access your images within your page JS or in your templates to work with them.
 
 ### `replaceImages(files, metalsmith, done)`
 
-Plugin to replace the images. You pass configuration while initializing the
-module. See above.
+Metalsmith plugin to replace the images.
+
+It will use [cheerio](https://cheerio.js.org/) to scan all html files for images and add the srcset and sizes attribute to them.
+
+Change the `htmlFileGlob` or
+`htmlImageSelector` option if you have special needs.
 
 ### `renderImage(src, attrs = {})`
 
@@ -253,9 +258,11 @@ Renders a adaptive image with srcset and sizes attribute based on your configura
 * `src` is the path to the image.
 * `attrs` is an object containing extra attributes for the image tag.
 
+I found myself often using just this feature of the plugin, since the methods above are not needed in every case.
+
 ```js
 const adaptiveImages = AdaptiveImages()
-adaptiveImages.reanderImage('images/example.jpg', {
+adaptiveImages.renderImage('images/example.jpg', {
   alt: 'alternative text',
   title: 'title text'
 })
