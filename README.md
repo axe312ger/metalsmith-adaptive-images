@@ -46,13 +46,16 @@ If you are looking for a very fast but effective JPEG compressor, I can really r
 
 ## Usage
 
-Just use it as regular Metalsmith plugin. If your environment does not support the import syntax, see further below.
+If your environment does not support the import syntax, see further below.
 
-The plugin expects an array of images within the metadata of a file.
+The module consists of 2 metalsmith plugins and one method for rendering adaptive images. All of them can be used separately.
+
+The `processImages` plugin expects an array of images within the metadata of a file.
 As soon as a matching metadata key is found, the plugin will create a new map of images with proper objects with the parsed and generated metadata.
 
-It also provides a function to render an adaptive image tag based on a provided
-image url and a plugin to replace all matching images in html code.
+It also provides the plugin `replaceImages` to replace all images with their adaptive cousins in your html.
+
+With `renderImage` you will get a adaptive image based on the provided url and the given configuration.
 
 ```js
 import Metalsmith from 'metalsmith'
@@ -65,6 +68,7 @@ const adaptiveImages = AdaptiveImages({
   ... your configuration here ...
 })
 
+// Example #1: Enhance your image metadata
 Metalsmith('/path/to/project')
   // Use metalsmith-project-images to locate images and add to file metadata.
   .use(images({}))
@@ -72,7 +76,13 @@ Metalsmith('/path/to/project')
   // The default options match the ones of metalsmith-project-images.
   .use(adaptiveImages.processImages)
   .use(markdown()) // Generate html files out of your markdown
-  .use(adaptiveImages.replaceImages)
+  .use(layouts(...)) // Apply layouts to your files and add adaptive images manually.
+  .build()
+
+// Example #2: Simply replace images
+Metalsmith('/path/to/project')
+  .use(markdown()) // Generate html files out of your markdown
+  .use(adaptiveImages.replaceImages) // Replace images based on the given configuration above.
   .build()
 ```
 
