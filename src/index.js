@@ -93,15 +93,13 @@ export default function AdaptiveImages (options) {
 
     Object.keys(files).map((filename) => {
       const file = files[filename]
-      if (file.hasOwnProperty(options.imagesKey) &&
-          minimatch(filename, options.htmlFileGlob)) {
+      if (minimatch(filename, options.htmlFileGlob)) {
         replaceMatchingImages(file)
       }
     })
   }
 
   function replaceMatchingImages (file) {
-    const images = file[options.imagesKey]
     const $ = cheerio.load(file.contents, {
       xmlMode: true,
       lowerCaseTags: true,
@@ -111,10 +109,8 @@ export default function AdaptiveImages (options) {
     $(options.htmlImageSelector).map((index, img) => {
       const { src, ...attrs } = img.attribs
 
-      if (images.indexOf(src) !== -1) {
-        const replacement = renderImage(src, attrs)
-        $(img).replaceWith(replacement)
-      }
+      const replacement = renderImage(src, attrs)
+      $(img).replaceWith(replacement)
     })
     file.contents = new Buffer($.html())
   }
