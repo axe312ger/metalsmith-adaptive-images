@@ -9,14 +9,27 @@
     "test": {
       "presets": ["es2015-node6"],
       "plugins": [
-        "istanbul"
+        "istanbul",
+        "transform-es2015-destructuring",
+        "transform-object-rest-spread",
+        "add-module-exports"
       ]
     },
     "node4": {
       "presets": ["es2015-node4"],
+      "plugins": [
+        "transform-es2015-destructuring",
+        "transform-object-rest-spread",
+        "add-module-exports"
+      ],
     },
     "node6": {
       "presets": ["es2015-node6"],
+      "plugins": [
+        "transform-es2015-destructuring",
+        "transform-object-rest-spread",
+        "add-module-exports"
+      ],
     }
   }
 }
