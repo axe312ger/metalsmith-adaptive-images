@@ -12,7 +12,7 @@ function replacePlaceholders (text, placeholders) {
 }
 
 // Parses attached images in metadata and transforms the array in a proper map
-export default function ResponsiveImages (options) {
+export default function AdaptiveImages (options) {
   const defaultOptions = {
     imagesKey: 'images',
     mapKey: 'imagesMap',
