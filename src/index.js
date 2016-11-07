@@ -3,7 +3,7 @@ const cheerio = require('cheerio')
 const minimatch = require('minimatch')
 
 function replacePlaceholders (text, placeholders) {
-  return text.replace(/\{([^\}]+)\}/g, (match, pattern) => {
+  return text.replace(/\{([^}]+)\}/g, (match, pattern) => {
     if (placeholders.hasOwnProperty(pattern)) {
       return placeholders[pattern]
     }

@@ -61,6 +61,7 @@
     "semantic-release": "^4.3.5"
   },
   "dependencies": {
+    "babel-plugin-add-module-exports": "^0.2.1",
     "cheerio": "^0.22.0",
     "metalsmith": "^2.2.0",
     "minimatch": "^3.0.3"

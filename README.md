@@ -107,14 +107,14 @@ files: {
 
 ### Node 6
 ```js
-const AdaptiveImages = require('metalsmith-adaptive-images').default
+const AdaptiveImages = require('metalsmith-adaptive-images')
 ```
 
 ### Node 4
 A version for the LTS version of node is also supplied. You can require it like this:
 
 ```js
-const AdaptiveImages = require('metalsmith-adaptive-images/dist/node-4').default
+const AdaptiveImages = require('metalsmith-adaptive-images/dist/node4')
 ```
 
 For further examples can be found in the test directory.
