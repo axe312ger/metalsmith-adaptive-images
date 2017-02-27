@@ -100,11 +100,7 @@ export default function AdaptiveImages (options) {
   }
 
   function replaceMatchingImages (file) {
-    const $ = cheerio.load(file.contents, {
-      xmlMode: true,
-      lowerCaseTags: true,
-      lowerCaseAttributeNames: true
-    })
+    const $ = cheerio.load(file.contents)
 
     $(options.htmlImageSelector).map((index, img) => {
       const { src, ...attrs } = img.attribs
