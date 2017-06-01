@@ -57,7 +57,7 @@
     "eslint-plugin-standard": "^2.1.1",
     "metalsmith-markdown": "^0.2.1",
     "metalsmith-project-images": "^1.1.2",
-    "nyc": "^10.0.0",
+    "nyc": "^11.0.1",
     "semantic-release": "^6.3.2"
   },
   "dependencies": {
