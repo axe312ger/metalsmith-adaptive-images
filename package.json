@@ -58,7 +58,7 @@
     "metalsmith-markdown": "^0.2.1",
     "metalsmith-project-images": "^1.1.2",
     "nyc": "^10.0.0",
-    "semantic-release": "^6.3.2"
+    "semantic-release": "^7.0.1"
   },
   "dependencies": {
     "babel-plugin-add-module-exports": "^0.2.1",
