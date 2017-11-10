@@ -39,6 +39,7 @@
   ],
   "devDependencies": {
     "ava": "^0.23.0",
+    "babel-cli": "^6.26.0",
     "babel-core": "^6.24.0",
     "babel-eslint": "^8.0.2",
     "babel-plugin-istanbul": "^4.1.1",
