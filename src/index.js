@@ -112,7 +112,7 @@ export default function AdaptiveImages (options) {
       const replacement = renderImage(src, attrs)
       $(img).replaceWith(replacement)
     })
-    file.contents = new Buffer($.html())
+    file.contents = Buffer.from($.html())
   }
 
   // Renderer for a responsive image. Additional attributes can be passed.
