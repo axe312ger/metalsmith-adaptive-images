@@ -1,3 +1,9 @@
+# DEPRECATION NOTICE:
+
+I am no more able to provide maintenance for this plugin. If you want to take ownership or get more information, please have a look here: https://github.com/axe312ger/metalsmith-adaptive-images/issues/62
+
+---
+
 # metalsmith-adaptive-images
 
 > A plugin for [Metalsmith](http://www.metalsmith.io/) to create adaptive images via `<img srcset="..." styles="..."/>`. It works well along with [metalsmith-project-images](https://github.com/hoetmaaiers/metalsmith-project-images).
